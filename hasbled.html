@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAS-BLED Score Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      background-color: #f7f7f7;
+    }
+    h1 {
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    select {
+      width: 100%;
+      padding: 5px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+      padding: 10px;
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <h1>HAS-BLED Score Calculator</h1>
+  <div id="form"></div>
+  <div class="result" id="output">Score: 0 — Low risk (~1/100 patient-years)</div>
+
+  <script>
+    const riskFactors = [
+      { label: "Hypertension", options: ["No", "Yes"] },
+      { label: "Abnormal renal/liver function", options: ["None", "Renal", "Liver", "Both"] },
+      { label: "Stroke", options: ["No", "Yes"] },
+      { label: "Bleeding history", options: ["No", "Yes"] },
+      { label: "Labile INRs", options: ["No", "Yes"] },
+      { label: "Age > 65", options: ["No", "Yes"] },
+      { label: "Drug or alcohol use", options: ["None", "Drug", "Alcohol", "Both"] },
+    ];
+
+    const formDiv = document.getElementById("form");
+
+    riskFactors.forEach((factor, index) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "form-group";
+
+      const label = document.createElement("label");
+      label.innerText = factor.label;
+      wrapper.appendChild(label);
+
+      const select = document.createElement("select");
+      select.id = `input-${index}`;
+      factor.options.forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt;
+        option.innerText = opt;
+        select.appendChild(option);
+      });
+      select.addEventListener("change", calculateScore);
+      wrapper.appendChild(select);
+
+      formDiv.appendChild(wrapper);
+    });
+
+    function calculateScore() {
+      let score = 0;
+      const values = riskFactors.map((_, i) => document.getElementById(`input-${i}`).value);
+
+      if (values[0] === "Yes") score++;
+      if (values[2] === "Yes") score++;
+      if (values[3] === "Yes") score++;
+      if (values[4] === "Yes") score++;
+      if (values[5] === "Yes") score++;
+
+      if (values[1] === "Renal" || values[1] === "Liver") score++;
+      if (values[1] === "Both") score += 2;
+
+      if (values[6] === "Drug" || values[6] === "Alcohol") score++;
+      if (values[6] === "Both") score += 2;
+
+      let riskText = "Low risk (~1/100 patient-years)";
+      if (score === 2) riskText = "Moderate risk";
+      if (score >= 3) riskText = "High risk - consider alternatives or precautions";
+
+      document.getElementById("output").innerText = `Score: ${score} — ${riskText}`;
+    }
+  </script>
+</body>
+</html>
